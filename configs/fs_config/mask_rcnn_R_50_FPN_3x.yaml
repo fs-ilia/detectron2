@@ -1,0 +1,21 @@
+_BASE_: "../Base-RCNN-FPN.yaml"
+MODEL:
+#  WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
+  WEIGHTS: "/home/ilia/Downloads/model_final_f10217.pkl"
+  MASK_ON: True
+  RESNETS:
+    DEPTH: 50
+  ROI_HEADS:
+    NUM_CLASSES: 3
+INPUT:
+  RANDOM_FLIP: vertical
+SOLVER:
+  STEPS: (25000, 45000)
+  MAX_ITER: 200000
+  IMS_PER_BATCH: 2
+DATASETS:
+  TRAIN: ("pig_train",)
+  TEST: ("pig_val",)
+TEST:
+  EVAL_PERIOD: 1000
+VIS_PERIOD: 1000
