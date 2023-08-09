@@ -107,6 +107,10 @@ _C.DATASETS.PROPOSAL_FILES_TEST = ()
 # Number of top scoring precomputed proposals to keep for test
 _C.DATASETS.PRECOMPUTED_PROPOSAL_TOPK_TEST = 1000
 
+# Dataset location and task type
+_C.DATASETS.DS_NAME = ""
+_C.DATASETS.DATA_DIR = ""
+
 # -----------------------------------------------------------------------------
 # DataLoader
 # -----------------------------------------------------------------------------

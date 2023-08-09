@@ -21,7 +21,10 @@ It also includes fewer abstraction, therefore is easier to add custom logic.
 
 import logging
 import os
+import git
 from collections import OrderedDict
+from datetime import datetime
+
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
@@ -33,6 +36,7 @@ from detectron2.data import (
     build_detection_test_loader,
     build_detection_train_loader,
 )
+from detectron2.data.datasets import register_coco_instances
 from detectron2.engine import default_argument_parser, default_setup, default_writers, launch
 from detectron2.evaluation import (
     CityscapesInstanceEvaluator,
@@ -52,10 +56,6 @@ from detectron2.utils.events import EventStorage
 
 logger = logging.getLogger("detectron2")
 
-from detectron2.data.datasets import register_coco_instances
-register_coco_instances("pig_train", {}, "/home/ilia/_data/_DS/pd_big_coco/train/annotations.json", "/home/ilia/_data/_DS/pd_big_coco/train/data")
-register_coco_instances("pig_val", {}, "/home/ilia/_data/_DS/pd_big_coco/val/annotations.json", "/home/ilia/_data/_DS/pd_big_coco/val/data")
-register_coco_instances("pig_test", {}, "/home/ilia/_data/_DS/pd_big_coco/test/annotations.json", "/home/ilia/_data/_DS/pd_big_coco/test/data")
 
 def get_evaluator(cfg, dataset_name, output_folder=None):
     """
@@ -123,7 +123,7 @@ def do_train(cfg, model, resume=False):
         model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler
     )
     start_iter = (
-        checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1
+            checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1
     )
     max_iter = cfg.SOLVER.MAX_ITER
 
@@ -157,16 +157,16 @@ def do_train(cfg, model, resume=False):
             scheduler.step()
 
             if (
-                cfg.TEST.EVAL_PERIOD > 0
-                and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
-                and iteration != max_iter - 1
+                    cfg.TEST.EVAL_PERIOD > 0
+                    and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
+                    and iteration != max_iter - 1
             ):
                 do_test(cfg, model)
                 # Compared to "train_net.py", the test results are not dumped to EventStorage
                 comm.synchronize()
 
             if iteration - start_iter > 5 and (
-                (iteration + 1) % 20 == 0 or iteration == max_iter - 1
+                    (iteration + 1) % 20 == 0 or iteration == max_iter - 1
             ):
                 for writer in writers:
                     writer.write()
@@ -180,11 +180,32 @@ def setup(args):
     cfg = get_cfg()
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
+    cfg = setup_output_dir(cfg)
     cfg.freeze()
     default_setup(
         cfg, args
     )  # if you don't like any of the default setup, write your own setup code
+    register_datasets(cfg)
+
     return cfg
+
+def setup_output_dir(cfg):
+    repo = git.Repo(search_parent_directories=True)
+    sha = repo.head.commit.hexsha
+    short_sha = repo.git.rev_parse(sha, short=6)
+    cfg['OUTPUT_DIR'] = os.path.join(cfg['DATASETS']['DATA_DIR'], cfg['DATASETS']['DS_NAME'],
+                                     "exp_{}_{}".format(datetime.now().strftime("%Y-%m-%d-%H:%M:%S"), short_sha))
+    return cfg
+
+def register_datasets(cfg):
+    for set_type in ["train", "val"]:
+        register_coco_instances(name="{}_{}".format(cfg['DATASETS']['DS_NAME'], set_type),
+                                metadata={},
+                                json_file=os.path.join(cfg['DATASETS']['DATA_DIR'], set_type,
+                                                       "{}_annotations.json".format(cfg['DATASETS']['DS_NAME'])),
+                                image_root=os.path.join(cfg['DATASETS']['DATA_DIR'], set_type, "data") if
+                                cfg['DATASETS']['DS_NAME'] != 'tag_detection' else
+                                os.path.join(cfg['DATASETS']['DATA_DIR'], set_type, "data_tags_cropped"))
 
 
 def main(args):

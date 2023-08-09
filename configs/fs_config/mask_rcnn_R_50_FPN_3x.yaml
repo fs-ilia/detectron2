@@ -14,8 +14,8 @@ SOLVER:
   MAX_ITER: 200000
   IMS_PER_BATCH: 2
 DATASETS:
-  TRAIN: ("pig_train",)
-  TEST: ("pig_val",)
+  TRAIN: ("pig_segmentation_train",)
+  TEST: ("pig_segmentation_val",)
 TEST:
-  EVAL_PERIOD: 1000
+  EVAL_PERIOD: 10
 VIS_PERIOD: 1000
