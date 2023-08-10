@@ -18,7 +18,7 @@ SOLVER:
   STEPS: (10000, 25000)
   MAX_ITER: 750000
   IMS_PER_BATCH: 4
-  WARMUP_ITERS: 2500
+  WARMUP_ITERS: 3500
 DATASETS:
   TRAIN: ("tag_detection_train",)
   TEST: ("tag_detection_val",)
