@@ -193,8 +193,8 @@ def setup_output_dir(cfg):
     repo = git.Repo(search_parent_directories=True)
     sha = repo.head.commit.hexsha
     short_sha = repo.git.rev_parse(sha, short=6)
-    cfg['OUTPUT_DIR'] = os.path.join(cfg['DATASETS']['DATA_DIR'], cfg['DATASETS']['DS_NAME'],
-                                     "exp_{}_{}".format(datetime.now().strftime("%Y-%m-%d-%H:%M:%S"), short_sha))
+    cfg['OUTPUT_DIR'] = os.path.join(cfg['DATASETS']['DATA_DIR'], "exp_{}".format(cfg['DATASETS']['DS_NAME']),
+                                     "{}_{}".format(datetime.now().strftime("%Y-%m-%d-%H:%M:%S"), short_sha))
     return cfg
 
 def register_datasets(cfg):
