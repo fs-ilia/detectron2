@@ -2,6 +2,7 @@ _BASE_: "../Base-RCNN-FPN.yaml"
 MODEL:
 #  WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
   WEIGHTS: "/home/ilia/Downloads/model_final_f10217.pkl"
+  PIXEL_MEAN: [90.799, 85.768, 90.306]
   MASK_ON: True
   RESNETS:
     DEPTH: 50
@@ -11,12 +12,14 @@ INPUT:
   MAX_SIZE_TRAIN: 1344
   RANDOM_FLIP: vertical
 SOLVER:
-  STEPS: (25000, 45000)
-  MAX_ITER: 200000
-  IMS_PER_BATCH: 2
+  STEPS: (15000, 30000)
+  MAX_ITER: 250000
+  IMS_PER_BATCH: 8
+  BASE_LR: 0.001
 DATASETS:
   TRAIN: ("pig_segmentation_train",)
   TEST: ("pig_segmentation_val",)
 TEST:
-  EVAL_PERIOD: 10
-VIS_PERIOD: 1000
+  EVAL_PERIOD: 2500
+VIS_PERIOD: 5000
+OUTPUT_DIR: ./pig_exp1

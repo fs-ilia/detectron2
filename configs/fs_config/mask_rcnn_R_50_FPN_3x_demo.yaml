@@ -2,6 +2,7 @@ _BASE_: "../Base-RCNN-FPN.yaml"
 MODEL:
 #  WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
   WEIGHTS: "/home/ilia/_proj/detectron2/tools/output/model_0199999.pth"
+  PIXEL_MEAN: [90.799, 85.768, 90.306]
   MASK_ON: True
   RESNETS:
     DEPTH: 50
