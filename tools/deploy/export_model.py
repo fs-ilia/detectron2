@@ -10,6 +10,7 @@ import detectron2.data.transforms as T
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import build_detection_test_loader, detection_utils
+from detectron2.data.datasets import register_coco_instances
 from detectron2.evaluation import COCOEvaluator, inference_on_dataset, print_csv_format
 from detectron2.export import (
     STABLE_ONNX_OPSET_VERSION,
@@ -25,6 +26,15 @@ from detectron2.utils.env import TORCH_VERSION
 from detectron2.utils.file_io import PathManager
 from detectron2.utils.logger import setup_logger
 
+def register_datasets(cfg):
+    for set_type in ["train", "val"]:
+        register_coco_instances(name="{}_{}".format(cfg['DATASETS']['DS_NAME'], set_type),
+                                metadata={},
+                                json_file=os.path.join(cfg['DATASETS']['DATA_DIR'], set_type,
+                                                       "{}_annotations.json".format(cfg['DATASETS']['DS_NAME'])),
+                                image_root=os.path.join(cfg['DATASETS']['DATA_DIR'], set_type, "data") if
+                                cfg['DATASETS']['DS_NAME'] != 'tag_detection' else
+                                os.path.join(cfg['DATASETS']['DATA_DIR'], set_type, "data_tags_cropped"))
 
 def setup_cfg(args):
     cfg = get_cfg()
@@ -208,6 +218,8 @@ if __name__ == "__main__":
     torch._C._jit_set_bailout_depth(1)
 
     cfg = setup_cfg(args)
+
+    register_datasets(cfg)
 
     # create a torch model
     torch_model = build_model(cfg)
