@@ -101,7 +101,14 @@ class DenseDetector(nn.Module):
             assert not torch.jit.is_scripting(), "Not supported"
             assert "instances" in batched_inputs[0], "Instance annotations are missing in training!"
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
-            return self.forward_training(images, features, predictions, gt_instances)
+            training_res = self.forward_training(images, features, predictions, gt_instances)
+
+            if self.vis_period > 0:
+                storage = get_event_storage()
+                if storage.iter % self.vis_period == 0:
+                    inference_res = self.forward_inference(images, features, predictions)
+                    self.visualize_training(batched_inputs, inference_res)
+            return training_res
         else:
             results = self.forward_inference(images, features, predictions)
             if torch.jit.is_scripting():
